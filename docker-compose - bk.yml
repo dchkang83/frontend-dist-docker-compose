@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  web:
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - was
+    links:
+      - was
+    volumes:
+      - ./nginx/was.conf:/etc/nginx/conf.d/was.conf:ro
+      - ./_webroot:/usr/share/nginx/html
+
+  was:
+      image: jboss/wildfly:10.0.0.Final
+      ports:
+        - 8080:8080
+        - 9990:9990
+      links:
+            - db
+      volumes:
+        - ./_deployments:/opt/jboss/wildfly/standalone/deployments
+
+  db:
+      build: ./mariadb
+      ports:
+        - 3306:3306
+      environment:
+        - MYSQL_ALLOW_EMPTY_PASSWORD=true
+        - MYSQL_DATABASE=joins
+        - MYSQL_USER=joins
+        - MYSQL_PASSWORD=joins
